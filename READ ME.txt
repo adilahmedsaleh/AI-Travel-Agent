@@ -1,0 +1,5 @@
+A `curl` command to start the workflow >>
+
+curl.exe -v -X POST "https://dork-numerator-peroxide.ngrok-free.dev/webhook-test/travel-assistant" -H "Content-Type: application/json" --data-binary "@body.json"
+
+And I included a body JSON, which is responsible for the trigger. 

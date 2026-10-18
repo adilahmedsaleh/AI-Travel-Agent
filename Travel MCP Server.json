@@ -1,0 +1,109 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "path": "b55e76e6-e823-49da-bd54-a5dd1e7ca2c9"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 2,
+      "position": [
+        0,
+        -128
+      ],
+      "id": "f1f47efa-49c8-4ffd-a2f3-30a81f01ed87",
+      "name": "MCP Server Trigger",
+      "webhookId": "b55e76e6-e823-49da-bd54-a5dd1e7ca2c9"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Returns current weather conditions for a given city",
+        "url": "=https://wttr.in/{{ $json.city }}?format=3",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        },
+        "optimizeResponse": true,
+        "responseType": "text"
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        -64,
+        96
+      ],
+      "id": "55ef3e20-990e-4438-928f-c7ae1a0ce880",
+      "name": "get_weather"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Searches for nearby tourist attractions and restaurants using Geoapify. First, use geocode_city to get the destination latitude and longitude. For restaurants use category \"catering.restaurant\". For tourist attractions, use category \"tourism.sights\". Pass the latitude and longitude returned by geocode_city.",
+        "url": "=https://api.geoapify.com/v2/places?categories={{ $fromAI('category', 'Use catering.restaurant for restaurants or tourism.sights for tourist attractions') }}&bias=proximity:{{ $fromAI('lon', 'longitude of the destination from geocoding') }},{{ $fromAI('lat', 'latitude of the destination from geocoding') }}&limit=5&apiKey=7da19400578048298cd0a5861f0e9d17",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        64,
+        96
+      ],
+      "id": "fc5d3dcc-9670-44bd-bd95-39ea7e150368",
+      "name": "search_places"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.geoapify.com/v1/geocode/search?text={{ $fromAI('city', 'The destination city to find coordinates for') }}&type=city&limit=1&format=json&apiKey=7da19400578048298cd0a5861f0e9d17",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        192,
+        96
+      ],
+      "id": "9c0be752-26b6-448c-b6f8-b4017fb2f277",
+      "name": "geocode_city"
+    }
+  ],
+  "connections": {
+    "get_weather": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "search_places": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "geocode_city": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "c043e6cbd14f0e537c29d8fd31d50986ef38362eb974a1cff9393948907b692b"
+  }
+}

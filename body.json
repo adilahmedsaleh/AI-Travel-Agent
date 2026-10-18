@@ -1,0 +1,5 @@
+{
+  "query": "I am planning a trip to Cox's Bazar. Please check the current weather conditions and also find tourist attractions and restaurants that I can visit. Give me a practical travel recommendation based on the information you retrieve.",
+  "budget": "mid-range",
+  "sessionId": "travel-test-002"
+}

@@ -1,0 +1,190 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "travel-assistant",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "6fa5cd90-ad3e-4886-8d24-581320a2d670",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -496,
+        -48
+      ],
+      "webhookId": "694e2be9-8ba2-4cd8-bf2f-c828de78332f"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query }}",
+        "options": {
+          "systemMessage": "=You are an AI Travel Assistant.\n\nUser request:\n{{ $json.query }}\n\nBudget:\n{{ $json.budget }}\n\nUse MCP tools to get current travel information.\n\nFor a destination:\n1. Use geocode_city to get coordinates.\n2. Use search_places for tourist attractions and restaurants.\n3. Use get_weather for current weather.\n\nUse the retrieved information to give a concise, practical travel recommendation. Do not invent current information."
+        }
+      },
+      "id": "25679da6-90ef-4543-9742-fc04a4120a6a",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        -48,
+        -48
+      ]
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Set Input').first().json.sessionId }}"
+      },
+      "id": "9eb8372e-7880-46ff-bc22-f4fa8e24d0af",
+      "name": "Preference Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        32,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "sseEndpoint": "https://dork-numerator-peroxide.ngrok-free.dev/mcp/b55e76e6-e823-49da-bd54-a5dd1e7ca2c9",
+        "include": "selected",
+        "includeTools": [
+          "search_places",
+          "get_weather",
+          "geocode_city"
+        ],
+        "options": {}
+      },
+      "id": "e8e66fd8-cb2a-444d-975d-a995db3c319e",
+      "name": "MCP Client Tool",
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        192,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0aa379eb-a688-4e68-a8b6-ccd05727fa15",
+              "name": "query",
+              "value": "= {{ $json.body.query }}",
+              "type": "string"
+            },
+            {
+              "id": "9e55765b-ec42-4965-b1ac-e2ff3eeb3092",
+              "name": "budget",
+              "value": "={{ $json.body.budget }}",
+              "type": "string"
+            },
+            {
+              "id": "412b8e84-1e11-471b-86ed-2638b44576e1",
+              "name": "sessionId",
+              "value": "={{ $json.body.sessionId || $json.body.userId || 'default-session' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -256,
+        -48
+      ],
+      "id": "cdf1e72c-0bd5-4c42-b5e1-29d756efcb8d",
+      "name": "Set Input"
+    },
+    {
+      "parameters": {
+        "model": "qwen3:8b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        192
+      ],
+      "id": "376196b1-5631-47e9-a01a-4c7b0cde9a9a",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "c4mJmPsuixyetyrg",
+          "name": "Ollama account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Set Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preference Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP Client Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Input": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c043e6cbd14f0e537c29d8fd31d50986ef38362eb974a1cff9393948907b692b"
+  }
+}
